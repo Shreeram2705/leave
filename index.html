@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Leave Management System</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <header>
+        <h1>Leave Management System</h1>
+    </header>
+
+    <main class="container">
+
+        <!-- Apply Leave Form -->
+
+        <section class="form-section">
+
+            <h2>Apply for Leave</h2>
+
+            <form id="leaveForm">
+
+                <label>Employee Name</label>
+
+                <input
+                    type="text"
+                    id="employeeName"
+                    placeholder="Enter employee name"
+                    required
+                >
+
+                <label>Leave Type</label>
+
+                <select id="leaveType" required>
+
+                    <option value="">Select Leave Type</option>
+
+                    <option value="Casual Leave">Casual Leave</option>
+
+                    <option value="Sick Leave">Sick Leave</option>
+
+                    <option value="Medical Leave">Medical Leave</option>
+
+                    <option value="Personal Leave">Personal Leave</option>
+
+                </select>
+
+                <label>Start Date</label>
+
+                <input
+                    type="date"
+                    id="startDate"
+                    required
+                >
+
+                <label>End Date</label>
+
+                <input
+                    type="date"
+                    id="endDate"
+                    required
+                >
+
+                <label>Reason</label>
+
+                <textarea
+                    id="reason"
+                    placeholder="Enter reason for leave"
+                    required
+                ></textarea>
+
+                <button type="submit">
+                    Apply Leave
+                </button>
+
+                <p id="message"></p>
+
+            </form>
+
+        </section>
+
+
+        <!-- Leave Requests -->
+
+        <section class="requests-section">
+
+            <h2>Leave Requests</h2>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Employee</th>
+
+                            <th>Leave Type</th>
+
+                            <th>Start Date</th>
+
+                            <th>End Date</th>
+
+                            <th>Reason</th>
+
+                            <th>Status</th>
+
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="leaveTable">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- Axios -->
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
