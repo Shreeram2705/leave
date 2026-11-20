@@ -7,20 +7,37 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const mongoUri = process.env.MONGO_URI;
+let connectionPromise;
 
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => {
-        console.log("MongoDB Connected Successfully!");
-    })
-    .catch((error) => {
-        console.error("MongoDB Connection Error:", error);
-        process.exit(1);
-    });
+async function connectToDatabase() {
+    if (mongoose.connection.readyState === 1) return;
+    if (!mongoUri) throw new Error("MONGO_URI is not configured");
+
+    if (!connectionPromise) {
+        connectionPromise = mongoose.connect(mongoUri)
+            .catch((error) => {
+                connectionPromise = undefined;
+                throw error;
+            });
+    }
+
+    await connectionPromise;
+}
+
+app.use("/api", async (req, res, next) => {
+    try {
+        await connectToDatabase();
+        next();
+    } catch (error) {
+        console.error("MongoDB connection error:", error.message);
+        res.status(503).json({ message: "Database is unavailable. Check the server configuration." });
+    }
+});
 
 // Leave Schema
 const leaveSchema = new mongoose.Schema({
@@ -86,6 +103,10 @@ app.post("/api/leaves", async (req, res) => {
 
         }
 
+        if (Number.isNaN(Date.parse(startDate)) || Number.isNaN(Date.parse(endDate))) {
+            return res.status(400).json({ message: "Please provide valid leave dates" });
+        }
+
         if (new Date(endDate) < new Date(startDate)) {
             return res.status(400).json({
                 message: "End date cannot be before start date"
@@ -109,10 +130,8 @@ app.post("/api/leaves", async (req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({
-            message: "Error applying for leave",
-            error: error.message
-        });
+        console.error("Error applying for leave:", error.message);
+        res.status(500).json({ message: "Error applying for leave" });
 
     }
 
@@ -132,6 +151,7 @@ app.get("/api/leaves", async (req, res) => {
 
     } catch (error) {
 
+        console.error("Error fetching leave requests:", error.message);
         res.status(500).json({
             message: "Error fetching leave requests"
         });
@@ -173,6 +193,11 @@ app.patch("/api/leaves/:id", async (req, res) => {
 
     } catch (error) {
 
+        if (error.name === "CastError") {
+            return res.status(400).json({ message: "Invalid leave request ID" });
+        }
+
+        console.error("Error updating leave status:", error.message);
         res.status(500).json({
             message: "Error updating leave status"
         });
@@ -182,13 +207,10 @@ app.patch("/api/leaves/:id", async (req, res) => {
 });
 
 
-// Start Server
-mongoose.connection.once("open", () => {
+// Vercel imports the Express app as a serverless function. Keep a listener for local use.
+if (require.main === module) {
+    app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+}
 
-    app.listen(PORT, () => {
+module.exports = app;
 
-        console.log(`Server running at http://localhost:${PORT}`);
-
-    });
-
-});
