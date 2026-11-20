@@ -19,7 +19,7 @@ async function connectToDatabase() {
     if (!mongoUri) throw new Error("MONGO_URI is not configured");
 
     if (!connectionPromise) {
-        connectionPromise = mongoose.connect(mongoUri)
+        connectionPromise = mongoose.connect(mongoUri, { dbName: "leave_management" })
             .catch((error) => {
                 connectionPromise = undefined;
                 throw error;
